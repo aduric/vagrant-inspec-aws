@@ -3,15 +3,15 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/xenial64"
+  config.vm.box_download_insecure = true
 
   config.vm.provider "virtualbox" do |vb|
     vb.name = "inspec-aws"
   end
 
-  config.vm.provision "file", source: "ssh/config", destination: ".ssh/config" 
-  config.vm.provision "file", source: "ssh/id_rsa", destination: ".ssh/id_rsa" 
-  config.vm.provision "file", source: "ssh/id_rsa.pub", destination: ".ssh/id_rsa.pub" 
-  config.vm.provision "file", source: "etc/aws-vars", destination: "/tmp/aws-vars" 
+  config.vm.provision "file", source: "etc/aws-vars", destination: "/tmp/aws-vars"
+
+  config.vm.synced_folder "../inspec-aws", "/inspec-aws"
 
   config.vm.provision "shell", inline: <<-SHELL
     chmod 400 /home/ubuntu/.ssh/id_rsa
@@ -33,8 +33,5 @@ Vagrant.configure("2") do |config|
     popd
 
     sed -ie 's#"$#:/opt/chefdk/bin"#' /etc/environment
-
-    sudo -i -u ubuntu sh -c 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
-    sudo -i -u ubuntu sh -c 'cd /home/ubuntu && git clone git@github.com:chef/inspec-aws.git'
   SHELL
 end
